@@ -1,0 +1,185 @@
+STEP 1: Create Project in Visual Studio Code
+📁 Create Folder
+rivera-ci-cd
+📄 Create index.html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rivera Events</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial;
+            background-color: #222;
+            color: white;
+        }
+        h1 {
+            color: #00ffcc;
+        }
+        .event {
+            margin: 15px;
+            padding: 10px;
+            border: 1px solid white;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🎉 Rivera Events 🎉</h1>
+
+<div class="event">1. Dance Competition 💃</div>
+<div class="event">2. Singing Competition 🎤</div>
+<div class="event">3. Coding Hackathon 💻</div>
+<div class="event">4. Gaming Tournament 🎮</div>
+<div class="event">5. Fashion Show 👗</div>
+
+</body>
+</html>
+🧩 STEP 2: Initialize Git & Push to GitHub
+🔹 Commands
+git init
+git add .
+git commit -m "Initial commit - Rivera events page"
+🔹 Create repo on GitHub
+
+Go to 👉 GitHub
+
+Then run:
+
+git remote add origin https://github.com/YOUR_USERNAME/rivera-ci-cd.git
+git branch -M main
+git push -u origin main
+🧩 STEP 3: Modify Code (Second Commit - Required Task)
+
+Edit index.html:
+
+<div class="event">6. Photography Contest 📸</div>
+
+Then push:
+
+git add .
+git commit -m "Added new event"
+git push
+🧩 STEP 4: Create Dockerfile
+📄 Dockerfile
+FROM nginx:latest
+COPY index.html /usr/share/nginx/html/index.html
+🧩 STEP 5: Build Docker Image
+docker build -t rivera-app .
+docker run -d -p 8080:80 rivera-app
+
+Check:
+
+http://localhost:8080
+🧩 STEP 6: Jenkins Pipeline Setup
+
+Open 👉 Jenkins
+
+🔹 Create New Job
+Click New Item
+Name: rivera-pipeline
+Select Pipeline
+🔹 Add Pipeline Script
+📄 Jenkinsfile
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Clone Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/YOUR_USERNAME/rivera-ci-cd.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                bat 'docker build -t rivera-app .'
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                bat 'docker rm -f rivera-container || true'
+                bat 'docker run -d -p 8081:80 --name rivera-container rivera-app'
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                bat 'kubectl apply -f deployment.yaml'
+                bat 'kubectl apply -f service.yaml'
+            }
+        }
+    }
+}
+🧩 STEP 7: Kubernetes Setup
+
+Use 👉 Kubernetes
+
+You can use:
+
+Minikube OR Docker Desktop Kubernetes
+🔹 Create deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rivera-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: rivera
+  template:
+    metadata:
+      labels:
+        app: rivera
+    spec:
+      containers:
+      - name: rivera-container
+        image: rivera-app
+        ports:
+        - containerPort: 80
+🔹 Create service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: rivera-service
+spec:
+  type: NodePort
+  selector:
+    app: rivera
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30007
+
+command in vs code 
+        git init 
+        git add deployment.yaml
+        git commit -m "updated"
+        git push
+
+        git init
+        git add service.yaml
+        git commit -m "Updated"
+        git push
+        
+🧩 STEP 8: Apply Kubernetes
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+
+Check:
+
+kubectl get pods
+kubectl get services
+🌐 Access Web App
+http://<your-ip>:30007
+🧩 STEP 9: CI/CD Flow (Understand for Viva)
+🔁 CI (Continuous Integration)
+Code pushed to GitHub
+Jenkins pulls code automatically
+🚀 CD (Continuous Deployment)
+Docker builds image
+Kubernetes deploys app
